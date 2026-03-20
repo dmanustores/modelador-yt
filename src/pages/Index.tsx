@@ -6,7 +6,8 @@ import ThumbnailSection from "@/components/ThumbnailSection";
 import TextSection from "@/components/TextSection";
 import NarrationSection from "@/components/NarrationSection";
 import ExportSection from "@/components/ExportSection";
-import { extractVideoId, getThumbnailUrl, type ProjectData } from "@/lib/project-types";
+import { extractVideoId, getThumbnailUrl, type ProjectData, DURATIONS } from "@/lib/project-types";
+import { generateContent } from "@/lib/ai-service";
 import { toast } from "sonner";
 
 const defaultProject: ProjectData = {
@@ -32,6 +33,13 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [videoId, setVideoId] = useState<string | null>(null);
 
+  // Loading states per action
+  const [translatingTitle, setTranslatingTitle] = useState(false);
+  const [translatingDesc, setTranslatingDesc] = useState(false);
+  const [generatingScript, setGeneratingScript] = useState(false);
+  const [generatingImagePrompts, setGeneratingImagePrompts] = useState(false);
+  const [generatingThumbnail, setGeneratingThumbnail] = useState(false);
+
   const update = useCallback((patch: Partial<ProjectData>) => {
     setProject((p) => ({ ...p, ...patch }));
   }, []);
@@ -55,8 +63,21 @@ const Index = () => {
       );
       if (res.ok) {
         const data = await res.json();
-        update({ originalTitle: data.title || "" });
+        const originalTitle = data.title || "";
+        update({ originalTitle });
         toast.success("Metadados extraídos com sucesso!");
+
+        // Extract full description via AI
+        try {
+          const desc = await generateContent({
+            action: "extract_description",
+            url: `https://www.youtube.com/watch?v=${id}`,
+            title: originalTitle,
+          });
+          if (desc) update({ originalDescription: desc });
+        } catch {
+          // Description extraction is optional, don't show error
+        }
       } else {
         toast.error("Não foi possível extrair os metadados do vídeo.");
       }
@@ -67,18 +88,133 @@ const Index = () => {
     setLoading(false);
   };
 
+  const handleTranslateTitle = async () => {
+    const text = project.generatedTitle || project.originalTitle;
+    if (!text) return;
+    setTranslatingTitle(true);
+    try {
+      const result = await generateContent({
+        action: "translate_title",
+        language: project.language,
+        title: text,
+      });
+      update({ generatedTitle: result });
+      toast.success("Título traduzido!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao traduzir título.");
+    }
+    setTranslatingTitle(false);
+  };
+
+  const handleTranslateDescription = async () => {
+    const text = project.generatedDescription || project.originalDescription;
+    if (!text) return;
+    setTranslatingDesc(true);
+    try {
+      const result = await generateContent({
+        action: "translate_description",
+        language: project.language,
+        description: text,
+      });
+      update({ generatedDescription: result });
+      toast.success("Descrição traduzida!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao traduzir descrição.");
+    }
+    setTranslatingDesc(false);
+  };
+
+  const handleGenerateScript = async () => {
+    setGeneratingScript(true);
+    try {
+      const durInfo = DURATIONS.find((d) => d.minutes === project.duration) || DURATIONS[1];
+      
+      // Generate script
+      const script = await generateContent({
+        action: "generate_script",
+        language: project.language,
+        duration: project.duration,
+        title: project.generatedTitle || project.originalTitle,
+        transcript: project.transcript,
+      });
+      update({ generatedScript: script });
+      toast.success("Roteiro gerado com sucesso!");
+
+      // Auto-generate title, description, hashtags, filename in parallel
+      const titleText = project.generatedTitle || project.originalTitle;
+      
+      const [genTitle, genDesc, genHashtags, genFileName] = await Promise.allSettled([
+        generateContent({
+          action: "generate_title",
+          language: project.language,
+          title: titleText,
+        }),
+        generateContent({
+          action: "generate_description",
+          language: project.language,
+          description: project.originalDescription,
+          script,
+          title: titleText,
+        }),
+        generateContent({
+          action: "generate_hashtags",
+          language: project.language,
+          script,
+          title: titleText,
+        }),
+        generateContent({
+          action: "generate_filename",
+          title: titleText,
+        }),
+      ]);
+
+      const patch: Partial<ProjectData> = {};
+      if (genTitle.status === "fulfilled") patch.generatedTitle = genTitle.value;
+      if (genDesc.status === "fulfilled") patch.generatedDescription = genDesc.value;
+      if (genHashtags.status === "fulfilled") patch.hashtags = genHashtags.value;
+      if (genFileName.status === "fulfilled") patch.suggestedFileName = genFileName.value;
+      update(patch);
+
+      if (Object.keys(patch).length > 0) {
+        toast.success("Título, descrição, hashtags e nome do arquivo gerados!");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao gerar roteiro.");
+    }
+    setGeneratingScript(false);
+  };
+
+  const handleGenerateImagePrompts = async () => {
+    if (!project.generatedScript) {
+      toast.error("Gere o roteiro primeiro para criar os prompts de imagem.");
+      return;
+    }
+    setGeneratingImagePrompts(true);
+    try {
+      const result = await generateContent({
+        action: "generate_image_prompts",
+        script: project.generatedScript,
+      });
+      update({ imagePrompts: result });
+      toast.success("Prompts de imagem gerados!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao gerar prompts de imagem.");
+    }
+    setGeneratingImagePrompts(false);
+  };
+
+  const handleGenerateThumbnail = () => {
+    toast.info("A geração de capas via IA requer integração com a API de imagem do Gemini (em breve).");
+  };
+
   const hasData = !!videoId;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top accent line */}
       <div className="h-1 gold-gradient" />
-
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        {/* URL Input */}
         <UrlInput url={url} loading={loading} onUrlChange={setUrl} onSubmit={handleExtract} />
 
-        {/* Settings */}
         <SettingsPanel
           language={project.language}
           duration={project.duration}
@@ -88,35 +224,33 @@ const Index = () => {
 
         {hasData && (
           <>
-            {/* 2. Thumbnails */}
             <ThumbnailSection
               originalThumb={project.thumbnailUrl}
               generatedThumb=""
-              onGenerate={() => toast.info("Integração com Gemini necessária para gerar capas.")}
-              onRemodel={() => toast.info("Integração com Gemini necessária para remodelar.")}
-              generating={false}
+              onGenerate={handleGenerateThumbnail}
+              onRemodel={handleGenerateThumbnail}
+              generating={generatingThumbnail}
             />
 
-            {/* 3. Title */}
             <TextSection
               title="Título do Vídeo"
               icon={<Type className="w-5 h-5 text-primary" />}
               content={project.generatedTitle || project.originalTitle}
               showTranslate
-              onTranslate={() => toast.info("Integração com IA necessária para traduzir.")}
+              onTranslate={handleTranslateTitle}
+              translating={translatingTitle}
             />
 
-            {/* 4. Description */}
             <TextSection
               title="Descrição Original"
               icon={<FileText className="w-5 h-5 text-primary" />}
               content={project.generatedDescription || project.originalDescription}
               showTranslate
-              onTranslate={() => toast.info("Integração com IA necessária para traduzir.")}
-              note="A descrição completa será extraída via API do Gemini"
+              onTranslate={handleTranslateDescription}
+              translating={translatingDesc}
+              note="A descrição é extraída automaticamente via IA"
             />
 
-            {/* 5. Transcript */}
             <TextSection
               title="Transcrição do Vídeo (Opcional)"
               icon={<ScrollText className="w-5 h-5 text-primary" />}
@@ -127,7 +261,6 @@ const Index = () => {
               placeholder="Cole aqui a transcrição do vídeo para gerar o roteiro..."
             />
 
-            {/* 6. Script */}
             <TextSection
               title="Roteiro e Narração"
               icon={<FileText className="w-5 h-5 text-primary" />}
@@ -135,24 +268,23 @@ const Index = () => {
               wordCount
               showGenerate
               generateLabel="Gerar Roteiro"
-              onGenerate={() => toast.info("Integração com Gemini necessária para gerar roteiro.")}
+              onGenerate={handleGenerateScript}
+              generating={generatingScript}
             />
 
-            {/* 7. Image Prompts */}
             <TextSection
               title="Prompts para Gerar Imagens (Inglês)"
               icon={<ImageIcon className="w-5 h-5 text-primary" />}
               content={project.imagePrompts}
               showGenerate
               generateLabel="Gerar Prompts de Imagem"
-              onGenerate={() => toast.info("Integração com Gemini necessária.")}
+              onGenerate={handleGenerateImagePrompts}
+              generating={generatingImagePrompts}
               note='Acesse o Whisk para gerar imagens (é necessário estar logado)'
             />
 
-            {/* 8. Narration */}
             <NarrationSection />
 
-            {/* 9. File Name */}
             <TextSection
               title="Nome Sugerido para o Arquivo de Vídeo"
               icon={<File className="w-5 h-5 text-primary" />}
@@ -160,7 +292,6 @@ const Index = () => {
               note="O nome será gerado automaticamente junto com o roteiro"
             />
 
-            {/* 10. Hashtags */}
             <TextSection
               title="Hashtags Sugeridas"
               icon={<Hash className="w-5 h-5 text-primary" />}
@@ -168,16 +299,14 @@ const Index = () => {
               note="As hashtags serão geradas automaticamente junto com o roteiro"
             />
 
-            {/* 11-12. Export */}
             <ExportSection
               data={{ ...project, generatedAt: new Date().toLocaleString("pt-BR") }}
-              onSave={() => toast.info("Integração com Supabase necessária para salvar.")}
+              onSave={() => toast.info("Integração com banco de dados será configurada em breve.")}
               saving={false}
             />
           </>
         )}
 
-        {/* Footer */}
         <footer className="text-center text-xs text-muted-foreground pt-6 pb-4">
           YouTube Content Studio · Ferramenta para Criadores de Conteúdo Bíblico
         </footer>
