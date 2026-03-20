@@ -7,7 +7,7 @@ import TextSection from "@/components/TextSection";
 import NarrationSection from "@/components/NarrationSection";
 import ExportSection from "@/components/ExportSection";
 import { extractVideoId, getThumbnailUrl, type ProjectData, DURATIONS } from "@/lib/project-types";
-import { generateContent, generateThumbnail } from "@/lib/ai-service";
+import { generateContent, generateThumbnail, generateThumbnailFast } from "@/lib/ai-service";
 import { toast } from "sonner";
 
 const defaultProject: ProjectData = {
@@ -40,6 +40,7 @@ const Index = () => {
   const [generatingScript, setGeneratingScript] = useState(false);
   const [generatingImagePrompts, setGeneratingImagePrompts] = useState(false);
   const [generatingThumbnail, setGeneratingThumbnail] = useState(false);
+  const [generatingFastThumbnail, setGeneratingFastThumbnail] = useState(false);
   const [generatingCreativeTitle, setGeneratingCreativeTitle] = useState(false);
   const [generatingCreativeDesc, setGeneratingCreativeDesc] = useState(false);
 
@@ -257,6 +258,22 @@ const Index = () => {
     setGeneratingThumbnail(false);
   };
 
+  const handleGenerateFastThumbnail = async () => {
+    setGeneratingFastThumbnail(true);
+    try {
+      const result = await generateThumbnailFast({
+        title: project.generatedTitle || project.originalTitle,
+        description: project.generatedDescription || project.originalDescription,
+        script: project.generatedScript,
+      });
+      update({ generatedThumbnailBase64: result });
+      toast.success("Capa rápida gerada com sucesso!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao gerar capa rápida.");
+    }
+    setGeneratingFastThumbnail(false);
+  };
+
   const handleRemodelThumbnail = async () => {
     setGeneratingThumbnail(true);
     try {
@@ -294,8 +311,10 @@ const Index = () => {
               originalThumb={project.thumbnailUrl}
               generatedThumb={project.generatedThumbnailBase64}
               onGenerate={handleGenerateThumbnail}
+              onGenerateFast={handleGenerateFastThumbnail}
               onRemodel={handleRemodelThumbnail}
               generating={generatingThumbnail}
+              generatingFast={generatingFastThumbnail}
             />
 
             <TextSection

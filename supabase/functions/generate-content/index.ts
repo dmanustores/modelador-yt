@@ -385,6 +385,18 @@ serve(async (req: any) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      case "generate_thumbnail_fast": {
+        const prompt = await callAI(
+          `You are an expert prompt engineer. Create a highly descriptive, comma-separated image generation prompt in English for a YouTube thumbnail based on this Title and Context. Focus on visual elements, lighting, style (cinematic, photorealistic, biblical). Maximum 40 words. DO NOT include any text or words in the image.`,
+          `Title: ${title}\nContext: ${description || script || ""}`,
+          "google/gemini-2.5-flash"
+        );
+        const seed = Math.floor(Math.random() * 1000000);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=720&nologo=true&seed=${seed}`;
+        return new Response(JSON.stringify({ result: imageUrl }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       default:
         return new Response(JSON.stringify({ error: "Invalid action" }), {
           status: 400,

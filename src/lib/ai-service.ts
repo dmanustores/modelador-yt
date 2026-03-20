@@ -74,3 +74,27 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
   if (!result) throw new Error("Nenhuma imagem foi gerada pela IA.");
   return result;
 }
+
+export async function generateThumbnailFast(params: ThumbnailParams): Promise<string> {
+  const { data, error } = await supabase.functions.invoke("generate-content", {
+    body: { action: "generate_thumbnail_fast", ...params },
+  });
+
+  if (error) {
+    if (error.message?.includes("429") || (error as any)?.status === 429) {
+      throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
+    }
+    throw new Error(error.message || "Erro ao gerar thumbnail rápida");
+  }
+
+  if (data?.error) {
+    if (data.error === "RATE_LIMIT") {
+      throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
+    }
+    throw new Error(data.error);
+  }
+
+  const result = data?.result;
+  if (!result) throw new Error("Nenhuma imagem rápida foi gerada pela IA.");
+  return result;
+}
