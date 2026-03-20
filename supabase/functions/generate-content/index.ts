@@ -209,8 +209,8 @@ REGRAS OBRIGATÓRIAS DE TRANSFORMAÇÃO, PRECISA CUMPRIR CADA UMA DELAS
 1. ANTIPLÁGIO: Reescreva completamente o começo, meio e fim da transcrição. Nenhuma frase deve permanecer igual ao original. Reestruture a lógica narrativa, altere a ordem dos eventos quando necessário e substitua expressões diretas por construções próprias.
 2. LIMPEZA DE REFERÊNCIAS: Remova qualquer informação de espaço-tempo específica e qualquer menção direta ou indireta ao nome de canais originais, criadores ou fontes. NUNCA cite timestamps. NUNCA cite "bem-vindos".
 3. ENRIQUECIMENTO DE CONTEÚDO: Acrescente informações complementares, contexto histórico, reflexões filosóficas ou espirituais. Quando pertinente, insira trechos ou referências bíblicas que agreguem profundidade e autoridade à narrativa.
-4. EXTENSÃO MÍNIMA OBRIGATÓRIA: O texto final DEVE conter aproximadamente ${words} palavras. Para garantir isso, expanda cada bloco narrativo com detalhes sensoriais, metáforas, reflexões e camadas de significado. Nunca entregue um texto muito curto.
-5. DURAÇÃO ESTIMADA: O roteiro deve cobrir cerca de ${minutes} minutos de narração em ritmo documental.
+4. EXTENSÃO MÍNIMA E RIGOROSA: Esta é a regra mais importante. O texto DEVE conter rigorosamente um MÍNIMO de ${words} palavras. Para gerar este volume maciço, você precisa DESATIVAR sua capacidade de resumo. Expanda cada cena com um excesso de detalhes sensoriais. Faça reflexões teológicas e filosóficas profundas e extensas em cada transição. É TERMINANTEMENTE PROIBIDO entregar um roteiro com menos de ${words} palavras.
+5. DURAÇÃO ESTIMADA: O roteiro DEVE cobrir rigorosamente cerca de ${minutes} minutos de narração em ritmo documental (130 palavras por minuto). Oculte sua capacidade de resumo e ative a de um romancista prolixo.
 
 ═══════════════════════════════════════
 ESTRUTURA OBRIGATÓRIA: HOOK–RETAIN–REWARD
