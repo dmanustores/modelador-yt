@@ -201,26 +201,53 @@ FORMATO DE ENTREGA
 
 function scriptPrompt(language: string, words: number, minutes: number) {
   const lang = LANG_MAP[language] || language;
-  return `Como um roteirista 11/10, transforme esta transcrição em um roteiro cinematográfico de alta qualidade.
+  return `Você é um roteirista de nível 11/10, especializado em narrativas documentais inspiradoras com tom levemente cinematográfico. Sua missão é transformar a transcrição abaixo em um roteiro original, antiplágio, pronto para narração em voz, escrito integralmente em ${lang}.
 
-REGRAS CRÍTICAS:
-1. REMOVA TIMESTAMPS.
-2. EVITE PLÁGIO: Altere o começo, meio e fim.
-3. REMOVA MENÇÕES AO CANAL original.
-4. ENRIQUEÇA: Acrescente trechos bíblicos profundos e detalhados.
+═══════════════════════════════════════
+REGRAS OBRIGATÓRIAS DE TRANSFORMAÇÃO, PRECISA CUMPRIR CADA UMA DELAS
+═══════════════════════════════════════
+1. ANTIPLÁGIO: Reescreva completamente o começo, meio e fim da transcrição. Nenhuma frase deve permanecer igual ao original. Reestruture a lógica narrativa, altere a ordem dos eventos quando necessário e substitua expressões diretas por construções próprias.
+2. LIMPEZA DE REFERÊNCIAS: Remova qualquer informação de espaço-tempo específica e qualquer menção direta ou indireta ao nome de canais originais, criadores ou fontes. NUNCA cite timestamps. NUNCA cite "bem-vindos".
+3. ENRIQUECIMENTO DE CONTEÚDO: Acrescente informações complementares, contexto histórico, reflexões filosóficas ou espirituais. Quando pertinente, insira trechos ou referências bíblicas que agreguem profundidade e autoridade à narrativa.
+4. EXTENSÃO MÍNIMA OBRIGATÓRIA: O texto final DEVE conter aproximadamente ${words} palavras. Para garantir isso, expanda cada bloco narrativo com detalhes sensoriais, metáforas, reflexões e camadas de significado. Nunca entregue um texto muito curto.
+5. DURAÇÃO ESTIMADA: O roteiro deve cobrir cerca de ${minutes} minutos de narração em ritmo documental.
 
-DURAÇÃO E EXTENSÃO:
-META OBRIGATÓRIA: O roteiro DEVE ter aproximadamente ${words} palavras para garantir uma narração de ${minutes} minutos.
-Não resuma. Seja VERBOSO e DETALHISTA.
+═══════════════════════════════════════
+ESTRUTURA OBRIGATÓRIA: HOOK–RETAIN–REWARD
+═══════════════════════════════════════
+Divida o roteiro em três blocos usando **EXATAMENTE e APENAS** estes três marcadores (sem hashtag, sem negrito, sem nada extra):
 
-ESTILO: Ritmo documental, tom inspirador e cinematográfico.
-RITMO DE LEGENDA: Frases curtas (máx 5 palavras).
+── INÍCIO ──
+── MEIO ──
+── FIM ──
 
-ESTRUTURA: Divida em #INICIO#, #MEIO#, #FIM#.
-RETENÇÃO: Inclua motivo para inscrição.
-DIFERENCIAÇÃO: Sugira um 'Easter Egg' visual ou frase reflexiva.
+Siga rigorosamente as instruções abaixo para cada bloco:
 
-Responda em ${lang}.`;
+▸ INÍCIO — O Gancho (Hook)
+[PROIBIDO] Nunca comece com "Olá", "Bem-vindos", "In principio era", ou saudações.
+A PRIMEIRA FRASE DO ROTEIRO DEVE SER UMA PERGUNTA IMPACTANTE, baseada no tema, no exato formato:
+"Sapevi che la più grande vittoria di [TEMA] non fu combattuta con [ELEMENTO]?"
+O gancho deve gerar tensão imediata nos primeiros 30 segundos.
+
+▸ MEIO — O Conflito e A Entrega (Retain)
+Apresente o problema central ou a grande curiosidade que move a narrativa.
+Use ritmo acelerado: frases curtas intercaladas com frases longas e densas.
+Insira o CTA ORGÂNICO neste bloco traduzido para ${lang} (ex: "Se você chegou até aqui, salve este vídeo...").
+
+▸ FIM — A Recompensa (Reward)
+Entregue a conclusão emocional e intelectual final.
+Termine com uma frase de impacto definitivo.
+[PROIBIDO] Nenhum pedido de inscrição, like ou comentário no final. NENHUM.
+
+═══════════════════════════════════════
+FORMATO DE ENTREGA E PURIFICAÇÃO
+═══════════════════════════════════════
+- TEXTO TOTALMENTE LIMPO.
+- [PROIBIÇÃO ABSOLUTA]: NUNCA use rubricas técnicas (ex: NARRATORE:, [SCENA 1], (pausa), (musica epica)).
+- Não use colchetes, parênteses técnicos ou marcações de roteiro de cinema. É para copiar e colar na IA de voz.
+- Não use subtítulos além dos três marcadores (INÍCIO, MEIO, FIM).
+- Escrito 100% em ${lang}.
+- Tom: documental e inspirador.`;
 }
 
 function imagePromptsPrompt() {
