@@ -147,7 +147,7 @@ MODO A — quando uma descrição existente for fornecida pelo link do youtube
 ══════════════════════════════════════\n\nTexto de referência: ${originalDescription}
 
 Tarefas obrigatórias:
-- Remova qualquer menção a nomes de canais, links externos ou chamadas para acessar outros perfis
+- [CRÍTICO] Remova COMPLETAMENTE e de forma ABSOLUTA qualquer menção a nomes de canais (ex: "Bem-vindos ao canal", "Bibbia Parlata", etc), links externos, redes sociais ou chamadas para acessar outros perfis. Se houver o nome do canal fonte na tradução, VOCÊ FALHOU.
 - Reescreva início, meio e fim com palavras diferentes para eliminar plágio, mantendo a ideia central
 - Distribua emoticons relevantes ao tema ao longo de todo o texto — sem exageros, 1 a 2 por parágrafo
 - Traduza o resultado final para ${lang}`
@@ -158,10 +158,13 @@ MODO B — quando NÃO houver descrição (apenas roteiro/narração disponível
 Tarefas obrigatórias:
 - Crie uma descrição original, envolvente e de alto impacto com base no conteúdo fornecido
 - Tom: inspirador, documental, com autoridade espiritual
+- [CRÍTICO] NUNCA crie ou adicione nomes de canais ou links fictícios.
 - Distribua emoticons relevantes ao tema ao longo de todo o texto — sem exageros, 1 a 2 por parágrafo
 - Escreva diretamente em ${lang}`;
 
   return `Você é um especialista em SEO para YouTube com foco em conteúdo bíblico/documental inspirador.
+  
+REGRA ZERO DE SEGURANÇA: NUNCA, SOB HIPÓTESE ALGUMA, INCLUA MENSAGENS DE BOAS-VINDAS A CANAIS OU CITE O NOME DE QUALQUER CANAL (ex: "Bibbia Parlata"). Isso é proibido.
 
 ${modeInstrucoes}
 
@@ -270,7 +273,14 @@ function fileNamePrompt() {
 
 function translatePrompt(language: string) {
   const lang = LANG_MAP[language] || language;
-  return `Traduza o texto abaixo fielmente para ${lang}. Mantenha o mesmo tom e formatação. Retorne APENAS a tradução, sem explicações.`;
+  return `Traduza o texto abaixo fielmente para ${lang}. Mantenha o mesmo tom e formatação.
+
+REGRA DE PURIFICAÇÃO:
+- Remova QUALQUER menção a nomes de canais ("Bem-vindos ao Bibbia Parlata", "Se inscreva no canal", etc).
+- Remova links externos ou pedidos de doação fora de contexto.
+- Se a frase original for apenas uma boas-vindas ao canal, EXCLUA a frase e não a traduza.
+
+Retorne APENAS a tradução purificada, sem explicações.`;
 }
 
 function metadataPrompt() {
