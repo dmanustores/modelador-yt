@@ -201,53 +201,38 @@ FORMATO DE ENTREGA
 
 function scriptPrompt(language: string, words: number, minutes: number) {
   const lang = LANG_MAP[language] || language;
-  return `Você é um roteirista de nível 11/10, especializado em narrativas documentais inspiradoras com tom levemente cinematográfico. Sua missão é transformar a transcrição abaixo em um roteiro original, antiplágio, pronto para narração em voz, escrito integralmente em ${lang}.
+  return `Você é um contador de histórias de nível 11/10 e um escritor literário brilhante, NÃO um roteirista de cinema. Sua missão é transformar a transcrição abaixo em uma NARRATIVA CONTÍNUA de alta profundidade, antiplágio, pronta para ser APENAS LIDA por um locutor, escrita integralmente em ${lang}.
 
 ═══════════════════════════════════════
-REGRAS OBRIGATÓRIAS DE TRANSFORMAÇÃO, PRECISA CUMPRIR CADA UMA DELAS
+REGRAS OBRIGATÓRIAS DE TRANSFORMAÇÃO
 ═══════════════════════════════════════
-1. ANTIPLÁGIO: Reescreva completamente o começo, meio e fim da transcrição. Nenhuma frase deve permanecer igual ao original. Reestruture a lógica narrativa, altere a ordem dos eventos quando necessário e substitua expressões diretas por construções próprias.
-2. LIMPEZA DE REFERÊNCIAS: Remova qualquer informação de espaço-tempo específica e qualquer menção direta ou indireta ao nome de canais originais, criadores ou fontes. NUNCA cite timestamps. NUNCA cite "bem-vindos".
-3. ENRIQUECIMENTO DE CONTEÚDO: Acrescente informações complementares, contexto histórico, reflexões filosóficas ou espirituais. Quando pertinente, insira trechos ou referências bíblicas que agreguem profundidade e autoridade à narrativa.
-4. EXTENSÃO MÍNIMA E RIGOROSA: Esta é a regra mais importante. O texto DEVE conter rigorosamente um MÍNIMO de ${words} palavras. Para gerar este volume maciço, você precisa DESATIVAR sua capacidade de resumo. Expanda cada cena com um excesso de detalhes sensoriais. Faça reflexões teológicas e filosóficas profundas e extensas em cada transição. É TERMINANTEMENTE PROIBIDO entregar um roteiro com menos de ${words} palavras.
-5. DURAÇÃO ESTIMADA: O roteiro DEVE cobrir rigorosamente cerca de ${minutes} minutos de narração em ritmo documental (130 palavras por minuto). Oculte sua capacidade de resumo e ative a de um romancista prolixo.
+1. ANTIPLÁGIO: Reescreva completamente o conteúdo. Nenhuma frase deve permanecer igual à transcrição original.
+2. LIMPEZA: Remova informações de espaço-tempo, nomes de canais, timestamps. NUNCA cite "bem-vindos" ou "olá".
+3. VOLUME E EXTENSÃO (A REGRA MAIS IMPORTANTE DE TODAS): O texto FINAL DEVE CONTER UM MÍNIMO DE ${words} PALAVRAS. Para atingir essa meta, você deve AGIR COMO UM ROMANCISTA PROLIXO. Expanda MUITO cada tópico com detalhes descritivos intensos, reflexões filosóficas, teológicas e contexto histórico rico. É TERMINANTEMENTE PROIBIDO resumir o conteúdo. Você precisa gerar TEXTO EXTREMAMENTE LONGO para preencher os exatos ${minutes} minutos.
 
 ═══════════════════════════════════════
-ESTRUTURA OBRIGATÓRIA: HOOK–RETAIN–REWARD
+ESTRUTURA E FORMATO DE ENTREGA (TEXTO CORRIDO)
 ═══════════════════════════════════════
-Divida o roteiro em três blocos usando **EXATAMENTE e APENAS** estes três marcadores (sem hashtag, sem negrito, sem nada extra):
+- NÃO ESCREVA COMO UM ROTEIRO VISUAL. Escreva como um TEXTO CONTÍNUO (um livro ou artigo longo) para locução.
+- [PROIBIÇÃO ABSOLUTA DE MARCAÇÕES DE CENA]: NUNCA USE: "**(SCENA 1)**", "NARRATORE:", "[PAUSA]", "(música épica)", "CORTA PARA:". Zero instruções de direção. 
+- [PROIBIÇÃO DE META-COMENTÁRIOS]: Não comece dizendo "Aqui está o roteiro", "Este é um texto épico". COMECE DIRETAMENTE COM A NARRAÇÃO.
+
+Divida o texto usando EXATAMENTE e APENAS estes três marcadores (sem hashtag, sem negrito, sem nada extra, somente o texto exato escrito em uma nova linha sozinhos):
 
 ── INÍCIO ──
 ── MEIO ──
 ── FIM ──
 
-Siga rigorosamente as instruções abaixo para cada bloco:
-
-▸ INÍCIO — O Gancho (Hook)
-[PROIBIDO] Nunca comece com "Olá", "Bem-vindos", "In principio era", ou saudações.
-A PRIMEIRA FRASE DO ROTEIRO DEVE SER UMA PERGUNTA IMPACTANTE, baseada no tema, no exato formato:
+▸ INÍCIO (O Gancho)
+A primeira frase logo abaixo do marcador deve ser uma PERGUNTA IMPACTANTE baseada no tema, neste formato exato traduzido para ${lang}:
 "Sapevi che la più grande vittoria di [TEMA] non fu combattuta con [ELEMENTO]?"
-O gancho deve gerar tensão imediata nos primeiros 30 segundos.
+[PROIBIDO]: Nunca comece o gancho com saudações.
 
-▸ MEIO — O Conflito e A Entrega (Retain)
-Apresente o problema central ou a grande curiosidade que move a narrativa.
-Use ritmo acelerado: frases curtas intercaladas com frases longas e densas.
-Insira o CTA ORGÂNICO neste bloco traduzido para ${lang} (ex: "Se você chegou até aqui, salve este vídeo...").
+▸ MEIO (O Recheio Prolixo)
+Este DEVE ser o bloco mais longo, contendo a esmagadora maioria das ${words} palavras. Insira o CTA ORGÂNICO neste bloco traduzido para ${lang} (ex: "Se você chegou até aqui, salve este vídeo...").
 
-▸ FIM — A Recompensa (Reward)
-Entregue a conclusão emocional e intelectual final.
-Termine com uma frase de impacto definitivo.
-[PROIBIDO] Nenhum pedido de inscrição, like ou comentário no final. NENHUM.
-
-═══════════════════════════════════════
-FORMATO DE ENTREGA E PURIFICAÇÃO
-═══════════════════════════════════════
-- TEXTO TOTALMENTE LIMPO.
-- [PROIBIÇÃO ABSOLUTA]: NUNCA use rubricas técnicas (ex: NARRATORE:, [SCENA 1], (pausa), (musica epica)).
-- Não use colchetes, parênteses técnicos ou marcações de roteiro de cinema. É para copiar e colar na IA de voz.
-- Não use subtítulos além dos três marcadores (INÍCIO, MEIO, FIM).
-- Escrito 100% em ${lang}.
-- Tom: documental e inspirador.`;
+▸ FIM (A Conclusão)
+Entregue a lição emocional e intelectual final. NUNCA peça inscrição, like ou comentário no final.`;
 }
 
 function imagePromptsPrompt() {
@@ -370,7 +355,8 @@ serve(async (req: any) => {
         const dur = durMap[duration] || durMap[30];
         result = await callAI(
           scriptPrompt(language, dur.words, dur.minutes),
-          `Transcrição original:\n${transcript}\n\nTítulo: ${title}`
+          `Transcrição original:\n${transcript}\n\nTítulo: ${title}`,
+          "google/gemini-3.1-pro-preview"
         );
         break;
       }
