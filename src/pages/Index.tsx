@@ -13,7 +13,7 @@ import { toast } from "sonner";
 const defaultProject: ProjectData = {
   url: "",
   language: "pt",
-  duration: 30,
+  duration: 15,
   originalTitle: "",
   originalDescription: "",
   transcript: "",
