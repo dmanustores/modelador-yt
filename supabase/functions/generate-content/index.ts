@@ -121,19 +121,21 @@ const LANG_MAP: Record<string, string> = {
 
 // ---------- PROMPTS ----------
 
-function titlePrompt(language: string) {
+function titlePrompt(language: string, originalTitle?: string) {
   const lang = LANG_MAP[language] || language;
   return `Você é um copywriter especialista em YouTube com 10+ anos de experiência, criador de canais religiosos com milhões de views. Crie um título curto (60-90 caracteres) sobre o tema do vídeo.
-
 Regras obrigatórias:
-- Gancho emocional imediato: curiosidade, choque, promessa ou pergunta.
-- Palavra-chave principal no início para SEO.
+- Gancho emocional imediato: curiosidade, choque, promessa ou pergunta (ex: "O Segredo que...").
+- Palavra-chave principal no início para SEO: [ex: Gideone, Fede, Bibbia].
 - Emojis estratégicos (1-2): ✨🙏🔥 para parar o scroll.
 - Tom épico/inspirador, como documentário Netflix + fé.
 - Otimizado para cliques: números, "nunca", "secreto", "verdade chocante".
-- PSICOLOGIA DO ESPECTADOR: Foque no viés de negatividade ou na lacuna de curiosidade.
+- PSICOLOGIA DO ESPECTADOR: Foque no viés de negatividade ou na lacuna de curiosidade (Ex: 'O erro que te impede de prosperar' em vez de 'Como prosperar').
 - Pense no público com base na linguagem solicitada (${lang}): fé prática, milagres cotidianos.
-- Me retorne APENAS o título em ${lang}. Nada mais.`;
+
+Título Original para referência: ${originalTitle || "Sem título original"}
+
+Me retorne APENAS o título em ${lang}, sem aspas ou explicações.`;
 }
 
 function descriptionPrompt(language: string) {
@@ -266,7 +268,7 @@ serve(async (req) => {
       }
       case "generate_title": {
         result = await callAI(
-          titlePrompt(language),
+          titlePrompt(language, title),
           `Título Original para referência: ${title}`,
           "google/gemini-3.1-pro-preview"
         );
