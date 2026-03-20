@@ -40,6 +40,7 @@ const Index = () => {
   const [generatingScript, setGeneratingScript] = useState(false);
   const [generatingImagePrompts, setGeneratingImagePrompts] = useState(false);
   const [generatingThumbnail, setGeneratingThumbnail] = useState(false);
+  const [generatingCreativeTitle, setGeneratingCreativeTitle] = useState(false);
 
   const update = useCallback((patch: Partial<ProjectData>) => {
     setProject((p) => ({ ...p, ...patch }));
@@ -105,6 +106,24 @@ const Index = () => {
       toast.error(e.message || "Erro ao traduzir título.");
     }
     setTranslatingTitle(false);
+  };
+
+  const handleGenerateCreativeTitle = async () => {
+    const text = project.generatedTitle || project.originalTitle;
+    if (!text) return;
+    setGeneratingCreativeTitle(true);
+    try {
+      const result = await generateContent({
+        action: "generate_title",
+        language: project.language,
+        title: text,
+      });
+      update({ generatedTitle: result });
+      toast.success("Título criativo gerado!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao gerar título.");
+    }
+    setGeneratingCreativeTitle(false);
   };
 
   const handleTranslateDescription = async () => {
@@ -268,6 +287,10 @@ const Index = () => {
               showTranslate
               onTranslate={handleTranslateTitle}
               translating={translatingTitle}
+              showSecondaryGenerate
+              secondaryGenerateLabel="Criar Título Criativo"
+              onSecondaryGenerate={handleGenerateCreativeTitle}
+              secondaryGenerating={generatingCreativeTitle}
             />
 
             <TextSection

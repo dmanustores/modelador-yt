@@ -18,6 +18,10 @@ interface TextSectionProps {
   translating?: boolean;
   generating?: boolean;
   note?: string;
+  showSecondaryGenerate?: boolean;
+  secondaryGenerateLabel?: string;
+  onSecondaryGenerate?: () => void;
+  secondaryGenerating?: boolean;
 }
 
 const TextSection = ({
@@ -37,6 +41,10 @@ const TextSection = ({
   translating,
   generating,
   note,
+  showSecondaryGenerate,
+  secondaryGenerateLabel,
+  onSecondaryGenerate,
+  secondaryGenerating,
 }: TextSectionProps) => {
   const [copied, setCopied] = useState(false);
 
@@ -117,6 +125,15 @@ const TextSection = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg gold-gradient text-primary-foreground text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {generating ? "Gerando..." : generateLabel || "Gerar"}
+          </button>
+        )}
+        {showSecondaryGenerate && (
+          <button
+            onClick={onSecondaryGenerate}
+            disabled={secondaryGenerating}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 disabled:opacity-50 transition-all"
+          >
+            ✨ {secondaryGenerating ? "Criando..." : secondaryGenerateLabel || "Criar Título Criativo"}
           </button>
         )}
       </div>
