@@ -41,6 +41,7 @@ const Index = () => {
   const [generatingImagePrompts, setGeneratingImagePrompts] = useState(false);
   const [generatingThumbnail, setGeneratingThumbnail] = useState(false);
   const [generatingCreativeTitle, setGeneratingCreativeTitle] = useState(false);
+  const [generatingCreativeDesc, setGeneratingCreativeDesc] = useState(false);
 
   const update = useCallback((patch: Partial<ProjectData>) => {
     setProject((p) => ({ ...p, ...patch }));
@@ -142,6 +143,23 @@ const Index = () => {
       toast.error(e.message || "Erro ao traduzir descrição.");
     }
     setTranslatingDesc(false);
+  };
+
+  const handleGenerateCreativeDescription = async () => {
+    setGeneratingCreativeDesc(true);
+    try {
+      const result = await generateContent({
+        action: "generate_description",
+        language: project.language,
+        description: project.originalDescription,
+        script: project.transcript || project.generatedScript,
+      });
+      update({ generatedDescription: result });
+      toast.success("Descrição criativa gerada!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao gerar descrição.");
+    }
+    setGeneratingCreativeDesc(false);
   };
 
   const handleGenerateScript = async () => {
@@ -300,6 +318,10 @@ const Index = () => {
               showTranslate
               onTranslate={handleTranslateDescription}
               translating={translatingDesc}
+              showSecondaryGenerate
+              secondaryGenerateLabel="Criar Desc Criativa"
+              onSecondaryGenerate={handleGenerateCreativeDescription}
+              secondaryGenerating={generatingCreativeDesc}
               note="A descrição é extraída automaticamente via IA"
             />
 

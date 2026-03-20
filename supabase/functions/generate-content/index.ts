@@ -138,23 +138,59 @@ Título Original para referência: ${originalTitle || "Sem título original"}
 Me retorne APENAS o título em ${lang}, sem aspas ou explicações.`;
 }
 
-function descriptionPrompt(language: string) {
+function descriptionPrompt(language: string, originalDescription?: string, script?: string) {
   const lang = LANG_MAP[language] || language;
-  return `Você é um criador profissional de YouTube (nicho bíblico/religioso) com canais em pleno crescimento. Escreva uma descrição completa (150-250 palavras) baseada no conteúdo fornecido.
+  
+  const modeInstrucoes = originalDescription
+    ? `══════════════════════════════════════
+MODO A — quando uma descrição existente for fornecida pelo link do youtube
+══════════════════════════════════════\n\nTexto de referência: ${originalDescription}
 
-REGRAS DE OURO:
-- NÃO inclua introduções, saudações, explicações ou comentários.
-- Comece OBRIGATORIAMENTE e DIRETAMENTE pelo Gancho épico.
+Tarefas obrigatórias:
+- Remova qualquer menção a nomes de canais, links externos ou chamadas para acessar outros perfis
+- Reescreva início, meio e fim com palavras diferentes para eliminar plágio, mantendo a ideia central
+- Distribua emoticons relevantes ao tema ao longo de todo o texto — sem exageros, 1 a 2 por parágrafo
+- Traduza o resultado final para ${lang}`
+    : `══════════════════════════════════════
+MODO B — quando NÃO houver descrição (apenas roteiro/narração disponível)
+══════════════════════════════════════\n\nBase de criação: ${script || "Sem conteúdo base"}
 
-Estrutura exata:
-1. Gancho épico (1-2 linhas): Pergunta ou fato chocante + emoji 🌟.
-2. Resumo cativante (3-4 linhas): Jornada da história com cliffhanger.
-3. Lição prática (2 linhas): Aplicação na vida real, fé hoje 🙏.
-4. RETENÇÃO DE INSCRITOS: Inclua um motivo específico para a inscrição.
-5. CTA agressivo e múltiplo (3 linhas).
+Tarefas obrigatórias:
+- Crie uma descrição original, envolvente e de alto impacto com base no conteúdo fornecido
+- Tom: inspirador, documental, com autoridade espiritual
+- Distribua emoticons relevantes ao tema ao longo de todo o texto — sem exageros, 1 a 2 por parágrafo
+- Escreva diretamente em ${lang}`;
 
-IMPORTANTE: Use quebras de linha duplas entre cada seção. Emojis equilibrados (8-12), palavras de poder.
-Responda OBRIGATORIAMENTE em ${lang}.`;
+  return `Você é um especialista em SEO para YouTube com foco em conteúdo bíblico/documental inspirador.
+
+${modeInstrucoes}
+
+══════════════════════════════════════
+REGRAS OBRIGATÓRIAS PARA AMBOS OS MODOS
+══════════════════════════════════════
+ESTRUTURA DA DESCRIÇÃO (nesta ordem):
+1. PRIMEIRA LINHA — SEO:
+   Frase de abertura com 150 a 160 caracteres contendo as palavras-chave principais do vídeo.
+   Esta linha deve funcionar como resumo e isca de busca ao mesmo tempo.
+   Exemplo: "Scopri il segreto nascosto di Gedeone: come un esercito di 300 uomini cambiò la storia con la fede. 🔥"
+2. CORPO DA DESCRIÇÃO:
+   2 a 3 parágrafos curtos expandindo o tema com linguagem envolvente.
+   Cada parágrafo com no máximo 4 linhas.
+   Inclua 1 referência bíblica ou espiritual relevante ao tema.
+3. BLOCO DE ENGAJAMENTO — CTA:
+   Uma pergunta direta que force o comentário do espectador.
+   Formato: "Qual [elemento do vídeo] você mais [ação emocional]? Rispondi con 'Amen' nei commenti! 🙏"
+   Adapte ao tema específico do conteúdo e traduza o formato para ${lang}.
+4. HASHTAGS FINAIS:
+   - 3 a 5 hashtags fixas do nicho: [ESTAS INFORMAÇÕES DEVEM SER RETIRADAS DO CONTEXTO, E SEPARADAS POR ","]
+
+══════════════════════════════════════
+FORMATO DE ENTREGA
+══════════════════════════════════════
+- Texto corrido em parágrafos — sem títulos, sem marcadores, sem colchetes
+- Pronto para copiar e colar diretamente no campo de descrição do YouTube
+- Idioma final: ${lang}
+- Sem menções a canais, sem links externos, sem quebras excessivas`;
 }
 
 function scriptPrompt(language: string, words: number, minutes: number) {
@@ -280,8 +316,8 @@ serve(async (req) => {
       }
       case "generate_description": {
         result = await callAI(
-          descriptionPrompt(language),
-          `Conteúdo de referência: ${description || script || title}`
+          descriptionPrompt(language, description, script),
+          "Aplique o modo identificado."
         );
         break;
       }
