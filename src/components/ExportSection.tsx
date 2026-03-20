@@ -14,7 +14,7 @@ const ExportSection = ({ data, onSave, saving }: ExportSectionProps) => {
 
   const buildExportText = () => {
     return `${"=".repeat(60)}
-PROJETO COMPLETO - YouTube Content Studio
+PROJETO COMPLETO - Modelador YT
 ${"=".repeat(60)}
 
 📌 NOME DO PROJETO: ${data.generatedTitle || data.originalTitle || "Sem título"}

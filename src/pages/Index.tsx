@@ -337,7 +337,7 @@ const Index = () => {
         )}
 
         <footer className="text-center text-xs text-muted-foreground pt-6 pb-4">
-          YouTube Content Studio · Ferramenta para Criadores de Conteúdo Bíblico
+          Modelador YT · Ferramenta para Criadores de Conteúdo Bíblico
         </footer>
       </div>
     </div>

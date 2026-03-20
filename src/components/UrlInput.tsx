@@ -11,7 +11,7 @@ const UrlInput = ({ url, loading, onUrlChange, onSubmit }: UrlInputProps) => {
   return (
     <div className="section-card text-center">
       <h1 className="font-display text-2xl md:text-3xl gold-text mb-2">
-        YouTube Content Studio
+        Modelador YT
       </h1>
       <p className="text-muted-foreground text-sm mb-6">
         Ferramenta de automação para criadores de conteúdo bíblico do YouTube
