@@ -38,3 +38,39 @@ export async function generateContent(params: GenerateParams): Promise<string> {
 
   return data?.result || "";
 }
+
+interface ThumbnailParams {
+  title?: string;
+  description?: string;
+  script?: string;
+}
+
+export async function generateThumbnail(params: ThumbnailParams): Promise<string> {
+  const { data, error } = await supabase.functions.invoke("generate-content", {
+    body: { action: "generate_thumbnail", ...params },
+  });
+
+  if (error) {
+    if (error.message?.includes("429") || (error as any)?.status === 429) {
+      throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
+    }
+    if (error.message?.includes("402") || (error as any)?.status === 402) {
+      throw new Error("Créditos insuficientes. Adicione créditos em Settings → Workspace → Usage.");
+    }
+    throw new Error(error.message || "Erro ao gerar thumbnail");
+  }
+
+  if (data?.error) {
+    if (data.error === "RATE_LIMIT") {
+      throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
+    }
+    if (data.error === "PAYMENT_REQUIRED") {
+      throw new Error("Créditos insuficientes. Adicione créditos em Settings → Workspace → Usage.");
+    }
+    throw new Error(data.error);
+  }
+
+  const result = data?.result;
+  if (!result) throw new Error("Nenhuma imagem foi gerada pela IA.");
+  return result;
+}

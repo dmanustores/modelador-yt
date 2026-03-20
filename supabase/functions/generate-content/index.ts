@@ -39,6 +39,76 @@ async function callAI(systemPrompt: string, userPrompt: string, model = "google/
   return data.choices?.[0]?.message?.content || "";
 }
 
+async function callAIImage(prompt: string) {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+  const response = await fetch(GATEWAY_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3-pro-image-preview",
+      modalities: ["text", "image"],
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const status = response.status;
+    if (status === 429) throw new Error("RATE_LIMIT");
+    if (status === 402) throw new Error("PAYMENT_REQUIRED");
+    const text = await response.text();
+    throw new Error(`AI gateway error ${status}: ${text}`);
+  }
+
+  const data = await response.json();
+
+  // Extract base64 image from the response
+  // The response may contain content parts with image data
+  const content = data.choices?.[0]?.message?.content;
+
+  // If content is an array of parts (multimodal response)
+  if (Array.isArray(content)) {
+    for (const part of content) {
+      if (part.type === "image_url" && part.image_url?.url) {
+        return part.image_url.url;
+      }
+    }
+  }
+
+  // Check for images array in the response (Vercel AI SDK style)
+  if (data.choices?.[0]?.message?.images) {
+    const img = data.choices[0].message.images[0];
+    if (img?.url) return img.url;
+    if (img?.b64_json) return `data:image/png;base64,${img.b64_json}`;
+  }
+
+  // Check inline_data in content parts
+  if (Array.isArray(content)) {
+    for (const part of content) {
+      if (part.inline_data?.data) {
+        const mime = part.inline_data.mime_type || "image/png";
+        return `data:${mime};base64,${part.inline_data.data}`;
+      }
+    }
+  }
+
+  // If content is a string that looks like base64 data URI
+  if (typeof content === "string" && content.startsWith("data:image")) {
+    return content;
+  }
+
+  throw new Error("No image data found in the AI response");
+}
+
 // ---------- LANGUAGE HELPERS ----------
 const LANG_MAP: Record<string, string> = {
   pt: "Português",
@@ -118,6 +188,31 @@ Mantenha o estilo bíblico e fotorealista documental, iluminação cinematográf
 Calcule a quantidade de imagens para não ficar repetitivo.
 Forneça APENAS os prompts de imagem. Cada prompt separado por duas quebras de linha.
 Não inclua o texto "Prompt de Imagem" ou numeração.`;
+}
+
+function thumbnailPrompt(title: string, description: string) {
+  return `Create a stunning cinematic YouTube thumbnail image in 16:9 aspect ratio (1280x720).
+
+THEME: Biblical / Religious / Spiritual
+VIDEO TITLE: "${title}"
+VIDEO CONTEXT: ${description || title}
+
+STYLE REQUIREMENTS:
+- Cinematic, dramatic lighting with golden hour / divine rays effect
+- Photorealistic, ultra high quality, 8K detail
+- Epic composition with strong focal point
+- Rich, warm color palette: deep golds, royal purples, celestial blues
+- Atmospheric depth with volumetric lighting and soft bokeh
+- Hollywood movie poster quality
+- Biblical/spiritual visual elements that match the video theme
+- Majestic landscapes, ancient architecture, or symbolic imagery as appropriate
+
+CRITICAL RULES:
+- DO NOT include any text, letters, words, or typography in the image
+- DO NOT include any watermarks or logos
+- The image must work as a YouTube thumbnail that grabs attention
+- Focus on ONE powerful visual concept that represents the video theme
+- Use strong contrast and vivid colors for small-screen visibility`;
 }
 
 function hashtagsPrompt(language: string) {
@@ -214,6 +309,16 @@ serve(async (req) => {
       case "generate_filename": {
         result = await callAI(fileNamePrompt(), `Título do vídeo: ${title}`);
         break;
+      }
+      case "generate_thumbnail": {
+        const prompt = thumbnailPrompt(
+          title || "Biblical Documentary",
+          description || script || ""
+        );
+        const imageBase64 = await callAIImage(prompt);
+        return new Response(JSON.stringify({ result: imageBase64 }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
       default:
         return new Response(JSON.stringify({ error: "Invalid action" }), {

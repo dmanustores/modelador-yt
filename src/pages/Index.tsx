@@ -7,7 +7,7 @@ import TextSection from "@/components/TextSection";
 import NarrationSection from "@/components/NarrationSection";
 import ExportSection from "@/components/ExportSection";
 import { extractVideoId, getThumbnailUrl, type ProjectData, DURATIONS } from "@/lib/project-types";
-import { generateContent } from "@/lib/ai-service";
+import { generateContent, generateThumbnail } from "@/lib/ai-service";
 import { toast } from "sonner";
 
 const defaultProject: ProjectData = {
@@ -24,6 +24,7 @@ const defaultProject: ProjectData = {
   hashtags: "",
   suggestedFileName: "",
   thumbnailUrl: "",
+  generatedThumbnailBase64: "",
   generatedAt: "",
 };
 
@@ -203,8 +204,36 @@ const Index = () => {
     setGeneratingImagePrompts(false);
   };
 
-  const handleGenerateThumbnail = () => {
-    toast.info("A geração de capas via IA requer integração com a API de imagem do Gemini (em breve).");
+  const handleGenerateThumbnail = async () => {
+    setGeneratingThumbnail(true);
+    try {
+      const result = await generateThumbnail({
+        title: project.generatedTitle || project.originalTitle,
+        description: project.generatedDescription || project.originalDescription,
+        script: project.generatedScript,
+      });
+      update({ generatedThumbnailBase64: result });
+      toast.success("Capa cinematográfica gerada com sucesso!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao gerar capa.");
+    }
+    setGeneratingThumbnail(false);
+  };
+
+  const handleRemodelThumbnail = async () => {
+    setGeneratingThumbnail(true);
+    try {
+      const result = await generateThumbnail({
+        title: project.generatedTitle || project.originalTitle,
+        description: project.generatedDescription || project.originalDescription,
+        script: project.generatedScript,
+      });
+      update({ generatedThumbnailBase64: result });
+      toast.success("Capa remodelada com sucesso!");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao remodelar capa.");
+    }
+    setGeneratingThumbnail(false);
   };
 
   const hasData = !!videoId;
@@ -226,9 +255,9 @@ const Index = () => {
           <>
             <ThumbnailSection
               originalThumb={project.thumbnailUrl}
-              generatedThumb=""
+              generatedThumb={project.generatedThumbnailBase64}
               onGenerate={handleGenerateThumbnail}
-              onRemodel={handleGenerateThumbnail}
+              onRemodel={handleRemodelThumbnail}
               generating={generatingThumbnail}
             />
 

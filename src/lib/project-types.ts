@@ -12,6 +12,7 @@ export interface ProjectData {
   hashtags: string;
   suggestedFileName: string;
   thumbnailUrl: string;
+  generatedThumbnailBase64: string;
   generatedAt: string;
 }
 
