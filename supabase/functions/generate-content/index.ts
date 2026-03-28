@@ -7,17 +7,19 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const NVIDIA_API_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+const LOVABLE_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const NVIDIA_DEFAULT_MODEL = "deepseek-ai/deepseek-v3.2";
 
-async function callAI(systemPrompt: string, userPrompt: string, model = "google/gemini-3-flash-preview") {
+async function callNvidia(systemPrompt: string, userPrompt: string, model = NVIDIA_DEFAULT_MODEL) {
   // @ts-ignore
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+  const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
+  if (!NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY is not configured");
 
-  const response = await fetch(GATEWAY_URL, {
+  const response = await fetch(NVIDIA_API_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      Authorization: `Bearer ${NVIDIA_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -26,6 +28,9 @@ async function callAI(systemPrompt: string, userPrompt: string, model = "google/
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
+      temperature: 1,
+      top_p: 0.95,
+      max_tokens: 8192,
     }),
   });
 
@@ -34,7 +39,7 @@ async function callAI(systemPrompt: string, userPrompt: string, model = "google/
     if (status === 429) throw new Error("RATE_LIMIT");
     if (status === 402) throw new Error("PAYMENT_REQUIRED");
     const text = await response.text();
-    throw new Error(`AI gateway error ${status}: ${text}`);
+    throw new Error(`NVIDIA API error ${status}: ${text}`);
   }
 
   const data = await response.json();
@@ -46,7 +51,7 @@ async function callAIImage(prompt: string) {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-  const response = await fetch(GATEWAY_URL, {
+  const response = await fetch(LOVABLE_GATEWAY_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -112,6 +117,49 @@ async function callAIImage(prompt: string) {
   throw new Error("No image data found in the AI response");
 }
 
+async function callNvidiaImage(prompt: string): Promise<string> {
+  // @ts-ignore
+  const NVIDIA_LIGHT_API_KEY = Deno.env.get("NVIDIA_LIGHT_API_KEY");
+  if (!NVIDIA_LIGHT_API_KEY) throw new Error("NVIDIA_LIGHT_API_KEY is not configured");
+
+  const response = await fetch("https://integrate.api.nvidia.com/v1/images/generations", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${NVIDIA_LIGHT_API_KEY}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      model: "black-forest-labs/flux-schnell",
+      prompt,
+      n: 1,
+      size: "1280x720",
+      response_format: "b64_json",
+    }),
+  });
+
+  if (!response.ok) {
+    const status = response.status;
+    if (status === 429) throw new Error("RATE_LIMIT");
+    if (status === 402) throw new Error("PAYMENT_REQUIRED");
+    const text = await response.text();
+    throw new Error(`NVIDIA Image API error ${status}: ${text}`);
+  }
+
+  const data = await response.json();
+
+  // Standard OpenAI images response: data[0].b64_json
+  if (data?.data?.[0]?.b64_json) {
+    return `data:image/png;base64,${data.data[0].b64_json}`;
+  }
+  // Or as a URL
+  if (data?.data?.[0]?.url) {
+    return data.data[0].url;
+  }
+
+  throw new Error("No image data found in NVIDIA image response");
+}
+
 // ---------- LANGUAGE HELPERS ----------
 const LANG_MAP: Record<string, string> = {
   pt: "Português",
@@ -143,7 +191,7 @@ Me retorne APENAS o título em ${lang}, sem aspas ou explicações.`;
 
 function descriptionPrompt(language: string, originalDescription?: string, script?: string) {
   const lang = LANG_MAP[language] || language;
-  
+
   const modeInstrucoes = originalDescription
     ? `══════════════════════════════════════
 MODO A — quando uma descrição existente for fornecida pelo link do youtube
@@ -321,58 +369,55 @@ serve(async (req: any) => {
 
     switch (action) {
       case "extract_description": {
-        result = await callAI(
+        result = await callNvidia(
           metadataPrompt(),
-          `URL do vídeo: ${url}\nTítulo do vídeo: ${title || ""}`,
-          "google/gemini-2.5-flash"
+          `URL do vídeo: ${url}\nTítulo do vídeo: ${title || ""}`
         );
         break;
       }
       case "generate_title": {
-        result = await callAI(
+        result = await callNvidia(
           titlePrompt(language, title),
-          `Título Original para referência: ${title}`,
-          "google/gemini-3.1-pro-preview"
+          `Título Original para referência: ${title}`
         );
         break;
       }
       case "translate_title": {
-        result = await callAI(translatePrompt(language), title);
+        result = await callNvidia(translatePrompt(language), title);
         break;
       }
       case "generate_description": {
-        result = await callAI(
+        result = await callNvidia(
           descriptionPrompt(language, description, script),
           "Aplique o modo identificado."
         );
         break;
       }
       case "translate_description": {
-        result = await callAI(translatePrompt(language), description);
+        result = await callNvidia(translatePrompt(language), description);
         break;
       }
       case "generate_script": {
         const dur = durMap[duration] || durMap[30];
-        result = await callAI(
+        result = await callNvidia(
           scriptPrompt(language, dur.words, dur.minutes),
-          `Transcrição original:\n${transcript}\n\nTítulo: ${title}`,
-          "google/gemini-3.1-pro-preview"
+          `Transcrição original:\n${transcript}\n\nTítulo: ${title}`
         );
         break;
       }
       case "generate_image_prompts": {
-        result = await callAI(imagePromptsPrompt(), `Roteiro:\n${script}`);
+        result = await callNvidia(imagePromptsPrompt(), `Roteiro:\n${script}`);
         break;
       }
       case "generate_hashtags": {
-        result = await callAI(
+        result = await callNvidia(
           hashtagsPrompt(language),
           `Roteiro de referência:\n${script || title}`
         );
         break;
       }
       case "generate_filename": {
-        result = await callAI(fileNamePrompt(), `Título do vídeo: ${title}`);
+        result = await callNvidiaLight(fileNamePrompt(), `Título do vídeo: ${title}`);
         break;
       }
       case "generate_thumbnail": {
@@ -380,16 +425,15 @@ serve(async (req: any) => {
           title || "Biblical Documentary",
           description || script || ""
         );
-        const imageBase64 = await callAIImage(prompt);
+        const imageBase64 = await callNvidiaImage(prompt);
         return new Response(JSON.stringify({ result: imageBase64 }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       case "generate_thumbnail_fast": {
-        const prompt = await callAI(
+        const prompt = await callNvidiaLight(
           `You are an expert prompt engineer. Create a highly descriptive, comma-separated image generation prompt in English for a YouTube thumbnail based on this Title and Context. Focus on visual elements, lighting, style (cinematic, photorealistic, biblical). Maximum 40 words. DO NOT include any text or words in the image.`,
-          `Title: ${title}\nContext: ${description || script || ""}`,
-          "google/gemini-2.5-flash"
+          `Title: ${title}\nContext: ${description || script || ""}`
         );
         const seed = Math.floor(Math.random() * 1000000);
         const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=720&nologo=true&seed=${seed}`;
