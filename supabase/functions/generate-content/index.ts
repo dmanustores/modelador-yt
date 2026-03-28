@@ -132,8 +132,7 @@ async function callNvidiaImage(prompt: string): Promise<string> {
     body: JSON.stringify({
       model: "stabilityai/stable-diffusion-3-medium",
       prompt,
-      n: 1,
-      size: "1024x1024", // SD3 standard size, css will fit it to 16:9 
+      aspect_ratio: "16:9",
       response_format: "b64_json",
     }),
   });
@@ -148,16 +147,26 @@ async function callNvidiaImage(prompt: string): Promise<string> {
 
   const data = await response.json();
 
-  // Standard OpenAI images response: data[0].b64_json
+  // Handle Stability/OpenAI combined response formats
   if (data?.data?.[0]?.b64_json) {
     return `data:image/png;base64,${data.data[0].b64_json}`;
   }
+  
+  if (data?.artifacts?.[0]?.base64) {
+    return `data:image/png;base64,${data.artifacts[0].base64}`;
+  }
+
   // Or as a URL
   if (data?.data?.[0]?.url) {
     return data.data[0].url;
   }
+  
+  // Directly base64 string
+  if (data?.image) {
+    return `data:image/png;base64,${data.image}`;
+  }
 
-  throw new Error("No image data found in NVIDIA image response");
+  throw new Error("No image data found in NVIDIA image response: " + JSON.stringify(data));
 }
 
 // ---------- LANGUAGE HELPERS ----------
