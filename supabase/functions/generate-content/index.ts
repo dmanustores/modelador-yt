@@ -117,10 +117,23 @@ async function callAIImage(prompt: string) {
   throw new Error("No image data found in the AI response");
 }
 
-async function callNvidiaImage(prompt: string): Promise<string> {
+async function callNvidiaImage(prompt: string, originalImageBase64?: string): Promise<string> {
   // @ts-ignore
   const NVIDIA_IMAGE_API_KEY = Deno.env.get("NVIDIA_IMAGE_API_KEY");
   if (!NVIDIA_IMAGE_API_KEY) throw new Error("NVIDIA_IMAGE_API_KEY is not configured");
+
+  const payload: any = {
+    prompt,
+    output_format: "png",
+  };
+
+  if (originalImageBase64) {
+    payload.image = originalImageBase64;
+    payload.strength = 0.6; // How much it differs from original (0 = exactly same, 1 = completely different)
+    payload.mode = "image-to-image";
+  } else {
+    payload.aspect_ratio = "16:9";
+  }
 
   const response = await fetch("https://ai.api.nvidia.com/v1/genai/stabilityai/stable-diffusion-3-medium", {
     method: "POST",
@@ -129,11 +142,7 @@ async function callNvidiaImage(prompt: string): Promise<string> {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({
-      prompt,
-      aspect_ratio: "16:9",
-      output_format: "png",
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -429,11 +438,13 @@ serve(async (req: any) => {
         break;
       }
       case "generate_thumbnail": {
+        const reqBody = await req.clone().json().catch(() => ({}));
+        const originalImageBase64 = reqBody.originalImageBase64;
         const prompt = thumbnailPrompt(
           title || "Biblical Documentary",
           description || script || ""
         );
-        const imageBase64 = await callNvidiaImage(prompt);
+        const imageBase64 = await callNvidiaImage(prompt, originalImageBase64);
         return new Response(JSON.stringify({ result: imageBase64 }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

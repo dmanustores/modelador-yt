@@ -43,6 +43,7 @@ interface ThumbnailParams {
   title?: string;
   description?: string;
   script?: string;
+  originalImageBase64?: string;
 }
 
 export async function generateThumbnail(params: ThumbnailParams): Promise<string> {
