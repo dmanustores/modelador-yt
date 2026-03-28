@@ -122,7 +122,7 @@ async function callNvidiaImage(prompt: string): Promise<string> {
   const NVIDIA_IMAGE_API_KEY = Deno.env.get("NVIDIA_IMAGE_API_KEY");
   if (!NVIDIA_IMAGE_API_KEY) throw new Error("NVIDIA_IMAGE_API_KEY is not configured");
 
-  const response = await fetch("https://integrate.api.nvidia.com/v1/images/generations", {
+  const response = await fetch("https://ai.api.nvidia.com/v1/genai/stabilityai/stable-diffusion-3-medium", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${NVIDIA_IMAGE_API_KEY}`,
@@ -130,10 +130,9 @@ async function callNvidiaImage(prompt: string): Promise<string> {
       Accept: "application/json",
     },
     body: JSON.stringify({
-      model: "stabilityai/stable-diffusion-3-medium",
       prompt,
       aspect_ratio: "16:9",
-      response_format: "b64_json",
+      output_format: "png",
     }),
   });
 
