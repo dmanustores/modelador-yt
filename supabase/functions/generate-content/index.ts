@@ -347,6 +347,39 @@ Regras:
 4. Use o idioma ${lang}.`;
 }
 
+function imageToImagePrompt(language: string) {
+  const lang = LANG_MAP[language] || language;
+  return `LANGUAGE INSTRUCTIONS — REQUIRED: All text elements MUST be written exclusively in ${lang.toUpperCase()}.
+Generate a photorealistic 16:9 horizontal image (YouTube thumbnail format, 1280x720px).
+DO NOT write descriptions. DO NOT explain. JUST generate the image.
+
+--- TASK: Create an original YouTube thumbnail inspired by the visual reference style.
+
+REQUIRED VISUAL ELEMENTS:
+FORMAT: 16:9 horizontal image. Photorealistic, 8K quality, sharp focus.
+
+CHARACTER (completely original — no plagiarism):
+Create a completely new fictional person. Change at least 3 characteristics of any reference: facial structure, hair color/style, age, skin tone, beard, clothing, body type.
+Preserve the emotional expression and narrative role (hero/elder/warrior/etc.).
+It must not resemble any real or identifiable person.
+
+BRANDING: No logos, watermarks, channel icons, or signatures. Only clean image.
+
+TEXT OVERLAY REQUIRED AND MUST BE IN ${lang.toUpperCase()} (rendered directly on the image):
+CRITICAL — THE TEXT MUST BE IDENTICAL IN MEANING TO THE REFERENCE IMAGE:
+Copy the exact words, title, and subtitle meaning from the provided reference image.
+Convert it to "${lang.toUpperCase()}".
+The text content must be pixel-perfectly faithful to the original wording.
+Position: Same composition zone as the reference image (lower third or center)
+Font: Maintain the same font as the provided image, high contrast — same visual style as the reference
+Color: Same color treatment as the submitted reference
+Layout: Preserve the same line breaks, hierarchy, and size proportions as the reference
+
+ATMOSPHERE: Cinematic lighting, dramatic mood, rich color gradation. Preserve the tension, color tones, and visual energy of the reference style.
+
+RESULT: A single rendered image. No textual response. No explanation. Just the image.`;
+}
+
 function fileNamePrompt() {
   return `Gere um nome de arquivo de vídeo com base no título fornecido. Retorne APENAS o nome do arquivo (sem extensão), usando underscores no lugar de espaços. Sem explicações.`;
 }
@@ -374,7 +407,7 @@ serve(async (req: any) => {
   }
 
   try {
-    const { action, language, duration, title, description, transcript, script, url } = await req.json();
+    const { action, language, duration, title, description, transcript, script, url, originalImageBase64 } = await req.json();
 
     const durMap: Record<number, { words: number; minutes: number }> = {
       15: { words: 2000, minutes: 15 },
@@ -438,12 +471,10 @@ serve(async (req: any) => {
         break;
       }
       case "generate_thumbnail": {
-        const reqBody = await req.clone().json().catch(() => ({}));
-        const originalImageBase64 = reqBody.originalImageBase64;
-        const prompt = thumbnailPrompt(
-          title || "Biblical Documentary",
-          description || script || ""
-        );
+        const prompt = originalImageBase64 
+          ? imageToImagePrompt(language || "pt")
+          : thumbnailPrompt(title || "Biblical Documentary", description || script || "");
+        
         const imageBase64 = await callNvidiaImage(prompt, originalImageBase64);
         return new Response(JSON.stringify({ result: imageBase64 }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
