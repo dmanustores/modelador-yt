@@ -119,21 +119,21 @@ async function callAIImage(prompt: string) {
 
 async function callNvidiaImage(prompt: string): Promise<string> {
   // @ts-ignore
-  const NVIDIA_LIGHT_API_KEY = Deno.env.get("NVIDIA_LIGHT_API_KEY");
-  if (!NVIDIA_LIGHT_API_KEY) throw new Error("NVIDIA_LIGHT_API_KEY is not configured");
+  const NVIDIA_IMAGE_API_KEY = Deno.env.get("NVIDIA_IMAGE_API_KEY");
+  if (!NVIDIA_IMAGE_API_KEY) throw new Error("NVIDIA_IMAGE_API_KEY is not configured");
 
   const response = await fetch("https://integrate.api.nvidia.com/v1/images/generations", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${NVIDIA_LIGHT_API_KEY}`,
+      Authorization: `Bearer ${NVIDIA_IMAGE_API_KEY}`,
       "Content-Type": "application/json",
       Accept: "application/json",
     },
     body: JSON.stringify({
-      model: "black-forest-labs/flux-schnell",
+      model: "stabilityai/stable-diffusion-3-medium",
       prompt,
       n: 1,
-      size: "1280x720",
+      size: "1024x1024", // SD3 standard size, css will fit it to 16:9 
       response_format: "b64_json",
     }),
   });
