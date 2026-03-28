@@ -463,8 +463,9 @@ serve(async (req: any) => {
   } catch (e) {
     console.error("generate-content error:", e);
     const message = e instanceof Error ? e.message : "Unknown error";
+    // Propagate the actual NVIDIA API error message instead of generic 500
     const status = message === "RATE_LIMIT" ? 429 : message === "PAYMENT_REQUIRED" ? 402 : 500;
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: message, details: String(e) }), {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
