@@ -51,13 +51,16 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
   });
 
   if (error) {
+    console.error("SUPABASE EDGE FUNCTION ERROR:", error);
+    if (error.context) console.error("Error context:", await error.context.json().catch(()=>"No json"));
+    
     if (error.message?.includes("429") || (error as any)?.status === 429) {
       throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
     }
     if (error.message?.includes("402") || (error as any)?.status === 402) {
       throw new Error("Créditos insuficientes. Adicione créditos em Settings → Workspace → Usage.");
     }
-    throw new Error(error.message || "Erro ao gerar thumbnail");
+    throw new Error(`[ERRO DA IA NVIDIA]: ${error.message} - Veja o console para mais detalhes.`);
   }
 
   if (data?.error) {
