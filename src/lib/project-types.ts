@@ -13,6 +13,7 @@ export interface ProjectData {
   suggestedFileName: string;
   thumbnailUrl: string;
   generatedThumbnailBase64: string;
+  geminiThumbnailPrompt: string;
   generatedAt: string;
 }
 

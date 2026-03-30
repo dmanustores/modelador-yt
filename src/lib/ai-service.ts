@@ -61,7 +61,7 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
     if (error.message?.includes("402") || (error as any)?.status === 402) {
       throw new Error("Créditos insuficientes. Adicione créditos em Settings → Workspace → Usage.");
     }
-    throw new Error(`[ERRO DA IA NVIDIA]: ${error.message} - Veja o console para mais detalhes.`);
+    throw new Error(`[ERRO DA IA GEMINI]: ${error.message} - Veja o console para mais detalhes.`);
   }
 
   if (data?.error) {

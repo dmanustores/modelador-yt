@@ -7,174 +7,83 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const NVIDIA_API_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
-const LOVABLE_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const NVIDIA_DEFAULT_MODEL = "deepseek-ai/deepseek-v3.2";
 
-async function callNvidia(systemPrompt: string, userPrompt: string, model = NVIDIA_DEFAULT_MODEL) {
+async function callGeminiVision(base64: string, language: string): Promise<string> {
   // @ts-ignore
-  const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
-  if (!NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY is not configured");
+  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
-  const response = await fetch(NVIDIA_API_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${NVIDIA_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 1,
-      top_p: 0.95,
-      max_tokens: 8192,
-    }),
-  });
+  const lang = LANG_MAP[language] || language;
+  const promptText = `Analyze this YouTube thumbnail image in extreme detail. Describe the characters (facial features, clothing, age, expression), the environment, the lighting, the color palette, and the mood. Do NOT describe the text overlay. Your description must be highly detailed so an AI image generator can recreate the exact aesthetic and composition.\n\nTranslate your final detailed description to ${lang}.`;
 
-  if (!response.ok) {
-    const status = response.status;
-    if (status === 429) throw new Error("RATE_LIMIT");
-    if (status === 402) throw new Error("PAYMENT_REQUIRED");
-    const text = await response.text();
-    throw new Error(`NVIDIA API error ${status}: ${text}`);
-  }
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
-}
-
-async function callAIImage(prompt: string) {
-  // @ts-ignore
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
-  const response = await fetch(LOVABLE_GATEWAY_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-3-pro-image-preview",
-      modalities: ["text", "image"],
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const status = response.status;
-    if (status === 429) throw new Error("RATE_LIMIT");
-    if (status === 402) throw new Error("PAYMENT_REQUIRED");
-    const text = await response.text();
-    throw new Error(`AI gateway error ${status}: ${text}`);
-  }
-
-  const data = await response.json();
-
-  // Extract base64 image from the response
-  // The response may contain content parts with image data
-  const content = data.choices?.[0]?.message?.content;
-
-  // If content is an array of parts (multimodal response)
-  if (Array.isArray(content)) {
-    for (const part of content) {
-      if (part.type === "image_url" && part.image_url?.url) {
-        return part.image_url.url;
-      }
+  const payload = {
+    contents: [{
+      parts: [
+        { text: promptText },
+        { inline_data: { mime_type: "image/jpeg", data: base64 } }
+      ]
+    }],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 1024,
     }
-  }
-
-  // Check for images array in the response (Vercel AI SDK style)
-  if (data.choices?.[0]?.message?.images) {
-    const img = data.choices[0].message.images[0];
-    if (img?.url) return img.url;
-    if (img?.b64_json) return `data:image/png;base64,${img.b64_json}`;
-  }
-
-  // Check inline_data in content parts
-  if (Array.isArray(content)) {
-    for (const part of content) {
-      if (part.inline_data?.data) {
-        const mime = part.inline_data.mime_type || "image/png";
-        return `data:${mime};base64,${part.inline_data.data}`;
-      }
-    }
-  }
-
-  // If content is a string that looks like base64 data URI
-  if (typeof content === "string" && content.startsWith("data:image")) {
-    return content;
-  }
-
-  throw new Error("No image data found in the AI response");
-}
-
-async function callNvidiaImage(prompt: string, originalImageBase64?: string): Promise<string> {
-  // @ts-ignore
-  const NVIDIA_IMAGE_API_KEY = Deno.env.get("NVIDIA_IMAGE_API_KEY");
-  if (!NVIDIA_IMAGE_API_KEY) throw new Error("NVIDIA_IMAGE_API_KEY is not configured");
-
-  const payload: any = {
-    prompt,
-    output_format: "png",
   };
 
-  if (originalImageBase64) {
-    payload.image = originalImageBase64;
-    payload.strength = 0.6; // How much it differs from original (0 = exactly same, 1 = completely different)
-    payload.mode = "image-to-image";
-  } else {
-    payload.aspect_ratio = "16:9";
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Gemini Vision API Error:", errorText);
+    return "Um cenário cinematográfico com iluminação dramática e cores ricas."; // Fallback
   }
 
-  const response = await fetch("https://ai.api.nvidia.com/v1/genai/stabilityai/stable-diffusion-3-medium", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${NVIDIA_IMAGE_API_KEY}`,
-      "Content-Type": "application/json",
-      Accept: "application/json",
+  const data = await response.json();
+  if (data.candidates && data.candidates.length > 0 && data.candidates[0].content.parts.length > 0) {
+    return data.candidates[0].content.parts[0].text;
+  }
+  return "Um cenário cinematográfico com iluminação dramática e cores ricas.";
+}
+
+async function callGemini(system: string, user: string): Promise<string> {
+  // @ts-ignore
+  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
+
+  const payload = {
+    system_instruction: {
+      parts: [{ text: system }]
     },
+    contents: [{
+      parts: [{ text: user }]
+    }],
+    generationConfig: {
+      temperature: 0.7,
+    }
+  };
+
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
     const status = response.status;
-    if (status === 429) throw new Error("RATE_LIMIT");
-    if (status === 402) throw new Error("PAYMENT_REQUIRED");
     const text = await response.text();
-    throw new Error(`NVIDIA Image API error ${status}: ${text}`);
+    console.error(`Gemini API error ${status}:`, text);
+    throw new Error(`Gemini API error ${status}: ${text}`);
   }
 
   const data = await response.json();
-
-  // Handle Stability/OpenAI combined response formats
-  if (data?.data?.[0]?.b64_json) {
-    return `data:image/png;base64,${data.data[0].b64_json}`;
-  }
-  
-  if (data?.artifacts?.[0]?.base64) {
-    return `data:image/png;base64,${data.artifacts[0].base64}`;
+  if (data.candidates && data.candidates.length > 0 && data.candidates[0].content.parts.length > 0) {
+    return data.candidates[0].content.parts[0].text;
   }
 
-  // Or as a URL
-  if (data?.data?.[0]?.url) {
-    return data.data[0].url;
-  }
-  
-  // Directly base64 string
-  if (data?.image) {
-    return `data:image/png;base64,${data.image}`;
-  }
-
-  throw new Error("No image data found in NVIDIA image response: " + JSON.stringify(data));
+  throw new Error("No text found in Gemini response");
 }
 
 // ---------- LANGUAGE HELPERS ----------
@@ -347,13 +256,16 @@ Regras:
 4. Use o idioma ${lang}.`;
 }
 
-function imageToImagePrompt(language: string) {
+function imageToImagePrompt(language: string, visualDescription: string) {
   const lang = LANG_MAP[language] || language;
   return `LANGUAGE INSTRUCTIONS — REQUIRED: All text elements MUST be written exclusively in ${lang.toUpperCase()}.
 Generate a photorealistic 16:9 horizontal image (YouTube thumbnail format, 1280x720px).
 DO NOT write descriptions. DO NOT explain. JUST generate the image.
 
 --- TASK: Create an original YouTube thumbnail inspired by the visual reference style.
+
+VISUAL FOUNDATION (Recreate this exact composition and mood):
+${visualDescription}
 
 REQUIRED VISUAL ELEMENTS:
 FORMAT: 16:9 horizontal image. Photorealistic, 8K quality, sharp focus.
@@ -419,69 +331,75 @@ serve(async (req: any) => {
 
     switch (action) {
       case "extract_description": {
-        result = await callNvidia(
+        result = await callGemini(
           metadataPrompt(),
           `URL do vídeo: ${url}\nTítulo do vídeo: ${title || ""}`
         );
         break;
       }
       case "generate_title": {
-        result = await callNvidia(
+        result = await callGemini(
           titlePrompt(language, title),
           `Título Original para referência: ${title}`
         );
         break;
       }
       case "translate_title": {
-        result = await callNvidia(translatePrompt(language), title);
+        result = await callGemini(translatePrompt(language), title);
         break;
       }
       case "generate_description": {
-        result = await callNvidia(
+        result = await callGemini(
           descriptionPrompt(language, description, script),
           "Aplique o modo identificado."
         );
         break;
       }
       case "translate_description": {
-        result = await callNvidia(translatePrompt(language), description);
+        result = await callGemini(translatePrompt(language), description);
         break;
       }
       case "generate_script": {
         const dur = durMap[duration] || durMap[30];
-        result = await callNvidia(
+        result = await callGemini(
           scriptPrompt(language, dur.words, dur.minutes),
           `Transcrição original:\n${transcript}\n\nTítulo: ${title}`
         );
         break;
       }
       case "generate_image_prompts": {
-        result = await callNvidia(imagePromptsPrompt(), `Roteiro:\n${script}`);
+        result = await callGemini(imagePromptsPrompt(), `Roteiro:\n${script}`);
         break;
       }
       case "generate_hashtags": {
-        result = await callNvidia(
+        result = await callGemini(
           hashtagsPrompt(language),
           `Roteiro de referência:\n${script || title}`
         );
         break;
       }
       case "generate_filename": {
-        result = await callNvidiaLight(fileNamePrompt(), `Título do vídeo: ${title}`);
+        result = await callGemini(fileNamePrompt(), `Título do vídeo: ${title}`);
         break;
       }
       case "generate_thumbnail": {
-        const prompt = originalImageBase64 
-          ? imageToImagePrompt(language || "pt")
-          : thumbnailPrompt(title || "Biblical Documentary", description || script || "");
+        let prompt = "";
         
-        const imageBase64 = await callNvidiaImage(prompt, originalImageBase64);
-        return new Response(JSON.stringify({ result: imageBase64 }), {
+        if (originalImageBase64) {
+          console.log("Extracting visual features from original base64 image via Gemini Vision...");
+          const visualDescription = await callGeminiVision(originalImageBase64, language || "pt");
+          prompt = imageToImagePrompt(language || "pt", visualDescription);
+        } else {
+          prompt = thumbnailPrompt(title || "Biblical Documentary", description || script || "");
+        }
+        
+        // Return the prompt text. The frontend user will copy it to Gemini manually.
+        return new Response(JSON.stringify({ result: prompt }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       case "generate_thumbnail_fast": {
-        const prompt = await callNvidiaLight(
+        const prompt = await callGemini(
           `You are an expert prompt engineer. Create a highly descriptive, comma-separated image generation prompt in English for a YouTube thumbnail based on this Title and Context. Focus on visual elements, lighting, style (cinematic, photorealistic, biblical). Maximum 40 words. DO NOT include any text or words in the image.`,
           `Title: ${title}\nContext: ${description || script || ""}`
         );

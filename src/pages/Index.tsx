@@ -25,6 +25,7 @@ const defaultProject: ProjectData = {
   suggestedFileName: "",
   thumbnailUrl: "",
   generatedThumbnailBase64: "",
+  geminiThumbnailPrompt: "",
   generatedAt: "",
 };
 
@@ -279,7 +280,7 @@ const Index = () => {
         script: project.generatedScript,
         originalImageBase64,
       });
-      update({ generatedThumbnailBase64: result });
+      update({ geminiThumbnailPrompt: result });
       toast.success("Capa cinematográfica gerada com sucesso!");
     } catch (e: any) {
       toast.error(e.message || "Erro ao gerar capa.");
@@ -295,7 +296,7 @@ const Index = () => {
         description: project.generatedDescription || project.originalDescription,
         script: project.generatedScript,
       });
-      update({ generatedThumbnailBase64: result });
+      update({ geminiThumbnailPrompt: result });
       toast.success("Capa rápida gerada com sucesso!");
     } catch (e: any) {
       toast.error(e.message || "Erro ao gerar capa rápida.");
@@ -303,21 +304,7 @@ const Index = () => {
     setGeneratingFastThumbnail(false);
   };
 
-  const handleRemodelThumbnail = async () => {
-    setGeneratingThumbnail(true);
-    try {
-      const result = await generateThumbnail({
-        title: project.generatedTitle || project.originalTitle,
-        description: project.generatedDescription || project.originalDescription,
-        script: project.generatedScript,
-      });
-      update({ generatedThumbnailBase64: result });
-      toast.success("Capa remodelada com sucesso!");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao remodelar capa.");
-    }
-    setGeneratingThumbnail(false);
-  };
+
 
   const hasData = !!videoId;
 
@@ -339,9 +326,10 @@ const Index = () => {
             <ThumbnailSection
               originalThumb={project.thumbnailUrl}
               generatedThumb={project.generatedThumbnailBase64}
+              geminiPrompt={project.geminiThumbnailPrompt}
               onGenerate={handleGenerateThumbnail}
               onGenerateFast={handleGenerateFastThumbnail}
-              onRemodel={handleRemodelThumbnail}
+              onUpload={(base64) => update({ generatedThumbnailBase64: base64 })}
               generating={generatingThumbnail}
               generatingFast={generatingFastThumbnail}
             />
