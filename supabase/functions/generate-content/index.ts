@@ -418,8 +418,9 @@ serve(async (req: Request) => {
           prompt = thumbnailPrompt(title || "Biblical Documentary", description || script || "");
         }
         
-        // Return the prompt text. The frontend user will copy it to Gemini manually.
-        return new Response(JSON.stringify({ result: prompt }), {
+        const seed = Math.floor(Math.random() * 1000000);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=720&nologo=true&seed=${seed}`;
+        return new Response(JSON.stringify({ result: imageUrl }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }

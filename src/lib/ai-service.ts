@@ -48,13 +48,11 @@ interface ThumbnailParams {
 }
 
 export async function generateThumbnail(params: ThumbnailParams): Promise<string> {
-  console.log("[generateThumbnail] params:", params);
   const { data, error } = await supabase.functions.invoke("generate-content", {
     body: { action: "generate_thumbnail", url: params.thumbnailUrl, originalImageBase64: params.originalImageBase64, title: params.title, description: params.description, script: params.script },
   });
 
   if (error) {
-    console.error("[generateThumbnail] SUPABASE ERROR:", error);
     let errorDetails = "";
     if (error.context) {
       try {
@@ -63,7 +61,6 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
         errorDetails = "Unable to read context";
       }
     }
-    console.error("[generateThumbnail] Error details:", errorDetails);
     
     if (error.message?.includes("429") || (error as { status?: number })?.status === 429) {
       throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
@@ -75,7 +72,6 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
   }
 
   if (data?.error) {
-    console.error("[generateThumbnail] DATA ERROR:", data.error);
     if (data.error === "RATE_LIMIT") {
       throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
     }
@@ -86,7 +82,6 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
   }
 
   const result = data?.result;
-  console.log("[generateThumbnail] result:", result);
   if (!result) throw new Error("Nenhuma imagem foi gerada pela IA.");
   return result;
 }

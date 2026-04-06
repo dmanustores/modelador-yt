@@ -252,7 +252,7 @@ const Index = () => {
         script: project.generatedScript,
         thumbnailUrl: project.thumbnailUrl,
       });
-      update({ geminiThumbnailPrompt: result });
+      update({ geminiThumbnailPrompt: result, generatedThumbnailBase64: result });
       toast.success("Capa cinematográfica gerada com sucesso!");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Erro ao gerar capa.");
