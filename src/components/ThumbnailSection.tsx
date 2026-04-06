@@ -1,4 +1,5 @@
 import { ImageIcon, RefreshCw, Sparkles, Download, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ThumbnailSectionProps {
   originalThumb: string;
@@ -35,8 +36,7 @@ const ThumbnailSection = ({
 
   const handleCopyPrompt = () => {
     navigator.clipboard.writeText(geminiPrompt);
-    // @ts-expect-error toast is a global window property
-    window.toast?.success("Prompt copiado!");
+    toast.success("Prompt copiado!");
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

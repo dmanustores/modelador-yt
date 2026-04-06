@@ -17,32 +17,32 @@ const ExportSection = ({ data, onSave, saving }: ExportSectionProps) => {
 PROJETO COMPLETO - Modelador YT
 ${"=".repeat(60)}
 
-📌 NOME DO PROJETO: ${data.generatedTitle || data.originalTitle || "Sem título"}
+[NOME DO PROJETO] ${data.generatedTitle || data.originalTitle || "Sem título"}
 
-📁 NOME SUGERIDO PARA O ARQUIVO DE VÍDEO:
+[NOME SUGERIDO PARA O ARQUIVO DE VIDEO]:
 ${data.suggestedFileName || "Aguardando geração..."}
 
-📝 TÍTULO:
+[TITULO]:
 ${data.generatedTitle || data.originalTitle || "Não gerado"}
 
-📄 DESCRIÇÃO:
+[DESCRICAO]:
 ${data.generatedDescription || data.originalDescription || "Não gerada"}
 
-#️⃣ HASHTAGS:
+[HASHTAGS]:
 ${data.hashtags || "Não geradas"}
 
-🎬 ROTEIRO E NARRAÇÃO:
+[ROTEIRO E NARRACAO]:
 ${data.generatedScript || "Não gerado"}
 
-🖼️ PROMPTS DE IMAGEM:
+[PROMPTS DE IMAGEM]:
 ${data.imagePrompts || "Não gerados"}
 
-🔗 LINK DO YOUTUBE ORIGINAL:
+[LINK DO YOUTUBE ORIGINAL]:
 ${data.url}
 
-🌍 Idioma: ${langLabel}
-⏱️ Duração: ${durInfo ? `${durInfo.label} (~${durInfo.words} palavras)` : `${data.duration} min`}
-⏰ Gerado em: ${data.generatedAt || new Date().toLocaleString("pt-BR")}
+Idioma: ${langLabel}
+Duracao: ${durInfo ? `${durInfo.label} (~${durInfo.words} palavras)` : `${data.duration} min`}
+Gerado em: ${data.generatedAt || new Date().toLocaleString("pt-BR")}
 
 ${"=".repeat(60)}
 `;
@@ -61,7 +61,7 @@ ${"=".repeat(60)}
 
   return (
     <div className="section-card">
-      <h2 className="font-display text-lg gold-text mb-4">📦 Exportar Projeto</h2>
+      <h2 className="font-display text-lg gold-text mb-4">Exportar Projeto</h2>
       <div className="flex flex-wrap gap-3">
         <button
           onClick={onSave}

@@ -115,7 +115,7 @@ const TextSection = ({
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:bg-surface-hover transition-colors"
           >
-            📋 Colar
+            Colar
           </button>
         )}
         {showGenerate && (
@@ -133,7 +133,7 @@ const TextSection = ({
             disabled={secondaryGenerating}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 disabled:opacity-50 transition-all"
           >
-            ✨ {secondaryGenerating ? "Criando..." : secondaryGenerateLabel || "Criar Título Criativo"}
+            {secondaryGenerating ? "Criando..." : secondaryGenerateLabel || "Criar Título Criativo"}
           </button>
         )}
       </div>
