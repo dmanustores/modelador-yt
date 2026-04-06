@@ -48,13 +48,22 @@ interface ThumbnailParams {
 }
 
 export async function generateThumbnail(params: ThumbnailParams): Promise<string> {
+  console.log("[generateThumbnail] params:", params);
   const { data, error } = await supabase.functions.invoke("generate-content", {
     body: { action: "generate_thumbnail", url: params.thumbnailUrl, originalImageBase64: params.originalImageBase64, title: params.title, description: params.description, script: params.script },
   });
 
   if (error) {
-    console.error("SUPABASE EDGE FUNCTION ERROR:", error);
-    if (error.context) console.error("Error context:", await error.context.json().catch(()=>"No json"));
+    console.error("[generateThumbnail] SUPABASE ERROR:", error);
+    let errorDetails = "";
+    if (error.context) {
+      try {
+        errorDetails = await error.context.text();
+      } catch {
+        errorDetails = "Unable to read context";
+      }
+    }
+    console.error("[generateThumbnail] Error details:", errorDetails);
     
     if (error.message?.includes("429") || (error as { status?: number })?.status === 429) {
       throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
@@ -62,10 +71,11 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
     if (error.message?.includes("402") || (error as { status?: number })?.status === 402) {
       throw new Error("Créditos insuficientes. Adicione créditos em Settings → Workspace → Usage.");
     }
-    throw new Error(`[ERRO DA IA GEMINI]: ${error.message} - Veja o console para mais detalhes.`);
+    throw new Error(`[ERRO]: ${error.message} | Details: ${errorDetails}`);
   }
 
   if (data?.error) {
+    console.error("[generateThumbnail] DATA ERROR:", data.error);
     if (data.error === "RATE_LIMIT") {
       throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
     }
@@ -76,6 +86,7 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
   }
 
   const result = data?.result;
+  console.log("[generateThumbnail] result:", result);
   if (!result) throw new Error("Nenhuma imagem foi gerada pela IA.");
   return result;
 }

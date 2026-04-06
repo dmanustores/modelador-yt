@@ -10,8 +10,11 @@ const corsHeaders = {
 
 async function urlToBase64(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) {
+      console.error(`Failed to fetch image: ${res.status} ${res.statusText}`);
+      return null;
+    }
     const bytes = await res.arrayBuffer();
     const b64 = btoa(String.fromCharCode(...new Uint8Array(bytes)));
     return b64;
