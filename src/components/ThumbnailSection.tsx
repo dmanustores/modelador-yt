@@ -35,7 +35,7 @@ const ThumbnailSection = ({
 
   const handleCopyPrompt = () => {
     navigator.clipboard.writeText(geminiPrompt);
-    // @ts-ignore
+    // @ts-expect-error toast is a global window property
     window.toast?.success("Prompt copiado!");
   };
 

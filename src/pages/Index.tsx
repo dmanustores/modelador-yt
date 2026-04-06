@@ -124,8 +124,8 @@ const Index = () => {
       });
       update({ generatedTitle: result });
       toast.success("Título traduzido!");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao traduzir título.");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao traduzir título.");
     }
     setTranslatingTitle(false);
   };
@@ -142,8 +142,8 @@ const Index = () => {
       });
       update({ generatedTitle: result });
       toast.success("Título criativo gerado!");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao gerar título.");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar título.");
     }
     setGeneratingCreativeTitle(false);
   };
@@ -160,8 +160,8 @@ const Index = () => {
       });
       update({ generatedDescription: result });
       toast.success("Descrição traduzida!");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao traduzir descrição.");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao traduzir descrição.");
     }
     setTranslatingDesc(false);
   };
@@ -177,8 +177,8 @@ const Index = () => {
       });
       update({ generatedDescription: result });
       toast.success("Descrição criativa gerada!");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao gerar descrição.");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar descrição.");
     }
     setGeneratingCreativeDesc(false);
   };
@@ -237,8 +237,8 @@ const Index = () => {
       if (Object.keys(patch).length > 0) {
         toast.success("Título, descrição, hashtags e nome do arquivo gerados!");
       }
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao gerar roteiro.");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar roteiro.");
     }
     setGeneratingScript(false);
   };
@@ -256,8 +256,8 @@ const Index = () => {
       });
       update({ imagePrompts: result });
       toast.success("Prompts de imagem gerados!");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao gerar prompts de imagem.");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar prompts de imagem.");
     }
     setGeneratingImagePrompts(false);
   };
@@ -282,8 +282,8 @@ const Index = () => {
       });
       update({ geminiThumbnailPrompt: result });
       toast.success("Capa cinematográfica gerada com sucesso!");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao gerar capa.");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar capa.");
     }
     setGeneratingThumbnail(false);
   };
@@ -298,8 +298,8 @@ const Index = () => {
       });
       update({ geminiThumbnailPrompt: result });
       toast.success("Capa rápida gerada com sucesso!");
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao gerar capa rápida.");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar capa rápida.");
     }
     setGeneratingFastThumbnail(false);
   };

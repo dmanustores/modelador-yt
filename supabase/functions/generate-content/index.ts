@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error Deno imports not recognized by TS
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -9,7 +9,7 @@ const corsHeaders = {
 
 
 async function callGeminiVision(base64: string, language: string): Promise<string> {
-  // @ts-ignore
+  // @ts-expect-error Deno.env not typed
   const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
@@ -49,7 +49,7 @@ async function callGeminiVision(base64: string, language: string): Promise<strin
 }
 
 async function callGemini(system: string, user: string): Promise<string> {
-  // @ts-ignore
+  // @ts-expect-error Deno.env not typed
   const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
@@ -312,8 +312,7 @@ function metadataPrompt() {
   return `Analise o vídeo do YouTube fornecido. Extraia a descrição original completa do vídeo. Retorne APENAS a descrição em texto puro, sem formatação JSON, sem explicações.`;
 }
 
-// @ts-ignore
-serve(async (req: any) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

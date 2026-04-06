@@ -17,10 +17,10 @@ export async function generateContent(params: GenerateParams): Promise<string> {
   });
 
   if (error) {
-    if (error.message?.includes("429") || (error as any)?.status === 429) {
+    if (error.message?.includes("429") || (error as { status?: number })?.status === 429) {
       throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
     }
-    if (error.message?.includes("402") || (error as any)?.status === 402) {
+    if (error.message?.includes("402") || (error as { status?: number })?.status === 402) {
       throw new Error("Créditos insuficientes. Adicione créditos em Settings → Workspace → Usage.");
     }
     throw new Error(error.message || "Erro ao gerar conteúdo");
@@ -55,10 +55,10 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
     console.error("SUPABASE EDGE FUNCTION ERROR:", error);
     if (error.context) console.error("Error context:", await error.context.json().catch(()=>"No json"));
     
-    if (error.message?.includes("429") || (error as any)?.status === 429) {
+    if (error.message?.includes("429") || (error as { status?: number })?.status === 429) {
       throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
     }
-    if (error.message?.includes("402") || (error as any)?.status === 402) {
+    if (error.message?.includes("402") || (error as { status?: number })?.status === 402) {
       throw new Error("Créditos insuficientes. Adicione créditos em Settings → Workspace → Usage.");
     }
     throw new Error(`[ERRO DA IA GEMINI]: ${error.message} - Veja o console para mais detalhes.`);
@@ -85,7 +85,7 @@ export async function generateThumbnailFast(params: ThumbnailParams): Promise<st
   });
 
   if (error) {
-    if (error.message?.includes("429") || (error as any)?.status === 429) {
+    if (error.message?.includes("429") || (error as { status?: number })?.status === 429) {
       throw new Error("Limite de requisições excedido. Aguarde um momento e tente novamente.");
     }
     throw new Error(error.message || "Erro ao gerar thumbnail rápida");
