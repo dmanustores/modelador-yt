@@ -29,25 +29,6 @@ const defaultProject: ProjectData = {
   generatedAt: "",
 };
 
-async function imageUrlToBase64(url: string): Promise<string | undefined> {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        // Supabase API often prefers just the base64, but we keep the header for the backend to strip if needed
-        resolve(result);
-      };
-      reader.readAsDataURL(blob);
-    });
-  } catch (e) {
-    console.warn("Failed to convert image to base64", e);
-    return undefined;
-  }
-}
-
 const Index = () => {
   const [project, setProject] = useState<ProjectData>(defaultProject);
   const [url, setUrl] = useState("");
@@ -265,20 +246,11 @@ const Index = () => {
   const handleGenerateThumbnail = async () => {
     setGeneratingThumbnail(true);
     try {
-      let originalImageBase64;
-      if (project.thumbnailUrl) {
-        originalImageBase64 = await imageUrlToBase64(project.thumbnailUrl);
-        // Strip the data:image... prefix so the backend gets clean base64
-        if (originalImageBase64 && originalImageBase64.includes(",")) {
-          originalImageBase64 = originalImageBase64.split(",")[1];
-        }
-      }
-
       const result = await generateThumbnail({
         title: project.generatedTitle || project.originalTitle,
         description: project.generatedDescription || project.originalDescription,
         script: project.generatedScript,
-        originalImageBase64,
+        thumbnailUrl: project.thumbnailUrl,
       });
       update({ geminiThumbnailPrompt: result });
       toast.success("Capa cinematográfica gerada com sucesso!");

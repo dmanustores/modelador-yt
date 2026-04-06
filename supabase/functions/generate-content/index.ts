@@ -8,6 +8,20 @@ const corsHeaders = {
 };
 
 
+async function urlToBase64(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const bytes = await res.arrayBuffer();
+    const b64 = btoa(String.fromCharCode(...new Uint8Array(bytes)));
+    return b64;
+  } catch (e) {
+    console.error("Failed to fetch image:", e);
+    return null;
+  }
+}
+
+
 async function callGeminiVision(base64: string, language: string): Promise<string> {
   // @ts-expect-error Deno.env not typed
   const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
@@ -388,6 +402,15 @@ serve(async (req: Request) => {
           console.log("Extracting visual features from original base64 image via Gemini Vision...");
           const visualDescription = await callGeminiVision(originalImageBase64, language || "pt");
           prompt = imageToImagePrompt(language || "pt", visualDescription);
+        } else if (url) {
+          const base64 = await urlToBase64(url);
+          if (base64) {
+            console.log("Extracting visual features from thumbnail URL via Gemini Vision...");
+            const visualDescription = await callGeminiVision(base64, language || "pt");
+            prompt = imageToImagePrompt(language || "pt", visualDescription);
+          } else {
+            prompt = thumbnailPrompt(title || "Biblical Documentary", description || script || "");
+          }
         } else {
           prompt = thumbnailPrompt(title || "Biblical Documentary", description || script || "");
         }

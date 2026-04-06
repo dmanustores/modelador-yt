@@ -106,6 +106,14 @@ const ThumbnailSection = ({
                 {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 {generating ? "Processando..." : "Gerar Prompt Premium"}
               </button>
+              <button
+                onClick={onGenerateFast}
+                disabled={generating || generatingFast}
+                className="flex-1 flex items-center justify-center gap-2 px-2 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-opacity"
+              >
+                {generatingFast ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {generatingFast ? "Processando..." : "Gerar Capa Rápida"}
+              </button>
             </div>
             
             {generatedThumb && (

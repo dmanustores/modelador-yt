@@ -44,11 +44,12 @@ interface ThumbnailParams {
   description?: string;
   script?: string;
   originalImageBase64?: string;
+  thumbnailUrl?: string;
 }
 
 export async function generateThumbnail(params: ThumbnailParams): Promise<string> {
   const { data, error } = await supabase.functions.invoke("generate-content", {
-    body: { action: "generate_thumbnail", ...params },
+    body: { action: "generate_thumbnail", url: params.thumbnailUrl, originalImageBase64: params.originalImageBase64, title: params.title, description: params.description, script: params.script },
   });
 
   if (error) {
@@ -81,7 +82,7 @@ export async function generateThumbnail(params: ThumbnailParams): Promise<string
 
 export async function generateThumbnailFast(params: ThumbnailParams): Promise<string> {
   const { data, error } = await supabase.functions.invoke("generate-content", {
-    body: { action: "generate_thumbnail_fast", ...params },
+    body: { action: "generate_thumbnail_fast", url: params.thumbnailUrl, title: params.title, description: params.description, script: params.script },
   });
 
   if (error) {
